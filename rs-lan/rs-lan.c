@@ -402,6 +402,12 @@ reset(void)
 	resetting = 1;
 
 	if (network_socket) {
+		/*
+		 * XXX: This sometimes causes a Data Abort exception, probably because of ongoing
+		 * transmission in other threads. But it is better to have DA exception and reset
+		 * (since we're resetting anyway), than to leave the socket open, because Agilent
+		 * will run out of socket resources and will start rejecting connections.
+		 */
 		NutTcpCloseSocket(network_socket);
 	}
 
@@ -447,6 +453,7 @@ start_reason(void)
 static void
 led1_on(void)
 {
+	/* Led1 - PA10 */
 	outr(PIOA_OER, _BV(10));
 	outr(PIOA_SODR, _BV(10));
 }
@@ -454,6 +461,7 @@ led1_on(void)
 static void
 led1_off(void)
 {
+	/* Led1 - PA10 */
 	outr(PIOA_OER, _BV(10));
 	outr(PIOA_CODR, _BV(10));
 }
@@ -461,6 +469,7 @@ led1_off(void)
 static void
 led2_on(void)
 {
+	/* Led2 - PA11 */
 	outr(PIOA_OER, _BV(11));
 	outr(PIOA_SODR, _BV(11));
 }
@@ -468,6 +477,7 @@ led2_on(void)
 static void
 led2_off(void)
 {
+	/* Led2 - PA11 */
 	outr(PIOA_OER, _BV(11));
 	outr(PIOA_CODR, _BV(11));
 }
