@@ -20,11 +20,11 @@
 #include "conf.h"
 
 #define	DEFAULT_MAC		"\x9e\x79\xcf\x6f\xd6\xc9"
-#define DEFAULT_IP		"10.32.96.50"
+#define DEFAULT_IP		"192.168.1.1"
 #define DEFAULT_NETMASK		"255.255.255.0"
 #define DEFAULT_GATEWAY		"0.0.0.0"
 
-#define REMOTE_IP		"10.32.96.32"
+#define REMOTE_IP		"192.168.1.2"
 #define REMOTE_PORT		5025
 
 #define CONFIG_OFFSET		256

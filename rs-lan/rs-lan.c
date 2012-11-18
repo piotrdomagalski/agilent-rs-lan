@@ -34,15 +34,16 @@
 
 #include "conf.h"
 
-#define UART_DEV		DEV_UART1
-#define UART_NAME		DEV_UART1_NAME
+#define UART_DEV		DEV_UART0
+#define UART_NAME		DEV_UART0_NAME
 #define UART_SPEED		38400
 
-#define CONSOLE_DEV		DEV_CONSOLE
-#define CONSOLE_NAME		DEV_CONSOLE_NAME
+#define CONSOLE_DEV		DEV_UART1
+#define CONSOLE_NAME		DEV_UART1_NAME
 #define CONSOLE_SPEED		115200
 
-#define NETWORK_TIMEOUT		40
+#define NETWORK_TIMEOUT		100
+#define MSG_CONNECTED		"CONNECTED\n"
 #define MSG_NOTCONNECTED	"NOTCONNECTED\n"
 #define MSG_TIMEOUT		"TIMEOUT\n"
 
@@ -321,6 +322,13 @@ open_connection(void)
 	log("Connected\n");
 
 	led1_on();
+
+	if (fputs(MSG_CONNECTED, uart_stream) == EOF) {
+		log("Failed to send over uart\n");
+		reset();
+	}
+
+	fflush(uart_stream);
 }
 
 static int
