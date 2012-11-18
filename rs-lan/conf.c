@@ -1,3 +1,9 @@
+/*
+ * Copyright 2012 Piotr Domagalski <piotr@domagalski.com>
+ *
+ * Released under MIT license.
+ */
+
 #include <arpa/inet.h>
 #include <dev/board.h>
 #include <dev/nvmem.h>

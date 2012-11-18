@@ -1,3 +1,9 @@
+/*
+ * Copyright 2012 Piotr Domagalski <piotr@domagalski.com>
+ *
+ * Released under MIT license.
+ */
+
 #ifndef CONF_H
 #define CONF_H
 

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2012 Piotr Domagalski <piotr@domagalski.com>
+ *
+ * Released under MIT license.
+ */
+
 #include <arpa/inet.h>
 #include <dev/board.h>
 #include <dev/reset.h>
@@ -32,7 +38,7 @@
 #define UART_NAME		DEV_UART1_NAME
 #define UART_SPEED		38400
 
-#define CONSOLE_DEV		DEV_CONSOLE		/* Equals to DEV_DEBUG */
+#define CONSOLE_DEV		DEV_CONSOLE
 #define CONSOLE_NAME		DEV_CONSOLE_NAME
 #define CONSOLE_SPEED		115200
 
@@ -87,7 +93,7 @@ static volatile int configuration_mode;
 
 THREAD(uart_thread, arg)
 {
-	char buf[256];
+	char buf[BUF_SIZE];
 
 	for (;;) {
 		if (resetting) {
@@ -177,7 +183,7 @@ THREAD(console_thread, arg)
 
 THREAD(network_thread, arg)
 {
-	char buf[256];
+	char buf[BUF_SIZE];
 
 	for (;;) {
 		if (resetting) {
