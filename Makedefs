@@ -1,0 +1,12 @@
+# Do not edit! Automatically generated on Thu Nov 15 23:10:15 2012
+
+top_srcdir = /home/szalik/projects/ethernut-5.0.5/nut
+top_blddir = /home/szalik/projects/ethernut-5.0.5/nutbld
+top_appdir = /home/szalik/projects/agilent-3441xA-rs-lan/agilent-rs-lan
+
+LIBDIR = /home/szalik/projects/ethernut-5.0.5/nutbld/lib
+INCFIRST=$(INCPRE)$(top_blddir)/include 
+include $(top_appdir)/NutConf.mk
+include $(top_srcdir)/app/Makedefs.arm-gcc
+include $(top_srcdir)/app/Makeburn.arm-oocd
+

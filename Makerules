@@ -1,0 +1,4 @@
+# Do not edit! Automatically generated on Thu Nov 15 20:12:14 2012
+
+
+include $(top_srcdir)/app/Makerules.arm-gcc
