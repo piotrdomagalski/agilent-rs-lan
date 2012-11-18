@@ -90,6 +90,7 @@ static volatile HANDLE network_timeout_event;
 
 static volatile int resetting;
 static volatile int configuration_mode;
+static volatile int log_msgs;
 
 THREAD(uart_thread, arg)
 {
@@ -103,6 +104,10 @@ THREAD(uart_thread, arg)
 		if (!fgets(buf, BUF_SIZE, uart_stream)) {
 			log("Failed to read from UART\n");
 			reset();
+		}
+
+		if (log_msgs) {
+			log("UART recvd (%d): %s", strlen(buf), buf);
 		}
 
 		if (is_connection_active()) {
@@ -147,6 +152,11 @@ THREAD(console_thread, arg)
 
 			case 'C':
 				conf_set_defaults();
+				break;
+
+			case 'l':
+				log_msgs = !log_msgs;
+				log("Log msgs: %d\n", log_msgs);
 				break;
 
 			case 'u':
@@ -197,6 +207,10 @@ THREAD(network_thread, arg)
 		if (fgets(buf, BUF_SIZE, network_stream)) {
 			stop_network_timeout();
 			led2_toggle();
+
+			if (log_msgs) {
+				log("Netw recvd (%d): %s", strlen(buf), buf);
+			}
 
 			if (fputs(buf, uart_stream) == EOF) {
 				log("Failed to send over uart\n");
