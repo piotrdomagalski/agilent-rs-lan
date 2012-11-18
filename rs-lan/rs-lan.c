@@ -486,7 +486,6 @@ led2_toggle(void)
 	led_state = !led_state;
 }
 
-
 int main(void)
 {
 	led1_off();
@@ -496,7 +495,7 @@ int main(void)
 
 	puts("");
 
-	log("Agilent 34410A RS-LAN translator starting\n");
+	log("Agilent 34410A RS-LAN translator\n");
 	log("Compilation " __DATE__ " " __TIME__ "\n");
 	log("Start reason: %s\n", start_reason());
        	log("Nut/OS %s\n", NutVersionString());
