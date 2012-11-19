@@ -111,24 +111,25 @@ THREAD(uart_thread, arg)
 			log("UART recvd (%d): %s", strlen(buf), buf);
 		}
 
-		if (is_connection_active()) {
-			if (fputs(buf, network_stream) == EOF) {
-				int err = NutTcpError(network_socket);
-				log("Failed to send over socket: %d %s\n", err, strerror(err));
-			} else {
-				fflush(network_stream);
-
-				if (network_timeout_needed(buf)) {
-					start_network_timeout();
-				}
-			}
-		} else {
+		if (!is_connection_active()) {
 			if (fputs(MSG_NOTCONNECTED, uart_stream) == EOF) {
 				log("Failed to send over uart\n");
 				reset();
 			}
 
 			fflush(uart_stream);
+			continue;
+		}
+
+		if (fputs(buf, network_stream) == EOF) {
+			int err = NutTcpError(network_socket);
+			log("Failed to send over socket: %d %s\n", err, strerror(err));
+		} else {
+			fflush(network_stream);
+
+			if (network_timeout_needed(buf)) {
+				start_network_timeout();
+			}
 		}
 	}
 }
@@ -526,14 +527,13 @@ int main(void)
 	init_console();
 
 	puts("");
-
 	log("Agilent 34410A RS-LAN translator\n");
 	log("Compilation " __DATE__ " " __TIME__ "\n");
 	log("Start reason: %s\n", start_reason());
        	log("Nut/OS %s\n", NutVersionString());
 
-	init_network();
 	init_uart();
+	init_network();
 
 	NutWatchDogStart(600, 0);
 
