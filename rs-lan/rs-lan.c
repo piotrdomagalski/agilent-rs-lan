@@ -524,6 +524,7 @@ int main(void)
 	led1_off();
 	led2_off();
 
+	init_uart();
 	init_console();
 
 	puts("");
@@ -532,7 +533,6 @@ int main(void)
 	log("Start reason: %s\n", start_reason());
        	log("Nut/OS %s\n", NutVersionString());
 
-	init_uart();
 	init_network();
 
 	NutWatchDogStart(600, 0);

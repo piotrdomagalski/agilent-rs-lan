@@ -2,7 +2,7 @@
 
 top_srcdir = /home/szalik/projects/ethernut-5.0.5/nut
 top_blddir = /home/szalik/projects/ethernut-5.0.5/nutbld
-top_appdir = /home/szalik/projects/agilent-3441xA-rs-lan/agilent-rs-lan
+top_appdir = /home/szalik/projects/agilent-rs-lan/agilent-rs-lan
 
 LIBDIR = /home/szalik/projects/ethernut-5.0.5/nutbld/lib
 INCFIRST=$(INCPRE)$(top_blddir)/include 
