@@ -45,7 +45,6 @@
 #define NETWORK_TIMEOUT		100
 #define MSG_CONNECTED		"CONNECTED\n"
 #define MSG_DISCONNECTED	"DISCONNECTED\n"
-#define MSG_NOTCONNECTED	"NOTCONNECTED\n"
 #define MSG_TIMEOUT		"TIMEOUT\n"
 
 #define DHCP_TIMEOUT		5000
@@ -114,7 +113,7 @@ THREAD(uart_thread, arg)
 		}
 
 		if (!is_connection_active()) {
-			send_uart(MSG_NOTCONNECTED);
+			send_uart(MSG_DISCONNECTED);
 			continue;
 		}
 
