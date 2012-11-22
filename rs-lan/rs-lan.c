@@ -44,6 +44,7 @@
 
 #define NETWORK_TIMEOUT		100
 #define MSG_CONNECTED		"CONNECTED\n"
+#define MSG_DISCONNECTED	"DISCONNECTED\n"
 #define MSG_NOTCONNECTED	"NOTCONNECTED\n"
 #define MSG_TIMEOUT		"TIMEOUT\n"
 
@@ -64,6 +65,7 @@
 static void init_console(void);
 static void init_network(void);
 static void init_uart(void);
+static void send_uart(const char *msg);
 static void reset(void);
 static const char *start_reason(void);
 
@@ -112,12 +114,7 @@ THREAD(uart_thread, arg)
 		}
 
 		if (!is_connection_active()) {
-			if (fputs(MSG_NOTCONNECTED, uart_stream) == EOF) {
-				log("Failed to send over uart\n");
-				reset();
-			}
-
-			fflush(uart_stream);
+			send_uart(MSG_NOTCONNECTED);
 			continue;
 		}
 
@@ -214,12 +211,8 @@ THREAD(network_thread, arg)
 				log("Netw recvd (%d): %s", strlen(buf), buf);
 			}
 
-			if (fputs(buf, uart_stream) == EOF) {
-				log("Failed to send over uart\n");
-				reset();
-			}
+			send_uart(buf);
 
-			fflush(uart_stream);
 		} else {
 			int err = NutTcpError(network_socket);
 			log("Failed to read from socket: %d %s\n", err, strerror(err));
@@ -235,12 +228,7 @@ THREAD(network_timeout_thread, arg)
 	for (;;) {
 		NutEventWait(&network_timeout_event, NUT_WAIT_INFINITE);
 
-		if (fputs(MSG_TIMEOUT, uart_stream) == EOF) {
-			log("Failed to send over uart\n");
-			reset();
-		}
-
-		fflush(uart_stream);
+		send_uart(MSG_TIMEOUT);
 	}
 }
 
@@ -307,6 +295,9 @@ open_connection(void)
 	while (NutTcpConnect(network_socket, conf.addr, conf.port)) {
 		int err = NutTcpError(network_socket);
 		log("Failed to connect: %d %s\n", err, strerror(err));
+
+		send_uart(MSG_DISCONNECTED);
+
 #if RESET_ON_CONNECTION_ERR == 1
 		reset();
 #else
@@ -324,12 +315,7 @@ open_connection(void)
 
 	led1_on();
 
-	if (fputs(MSG_CONNECTED, uart_stream) == EOF) {
-		log("Failed to send over uart\n");
-		reset();
-	}
-
-	fflush(uart_stream);
+	send_uart(MSG_CONNECTED);
 }
 
 static int
@@ -342,6 +328,8 @@ static void
 close_connection(void)
 {
 	led1_off();
+
+	send_uart(MSG_DISCONNECTED);
 
 	fclose(network_stream);
 	network_stream = NULL;
@@ -416,6 +404,17 @@ init_uart(void)
 }
 
 static void
+send_uart(const char *msg)
+{
+	if (fputs(msg, uart_stream) == EOF) {
+		log("Failed to send over uart\n");
+		reset();
+	}
+
+	fflush(uart_stream);
+}
+
+static void
 reset(void)
 {
 	if (configuration_mode) {
@@ -434,7 +433,7 @@ reset(void)
 		NutTcpCloseSocket(network_socket);
 	}
 
-	/* Give some time to send out UART buffers */
+	/* Give some time to send out UART buffers and close socket. */
 	NutSleep(250);
 
 	NutReset();
