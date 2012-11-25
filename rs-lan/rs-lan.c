@@ -34,6 +34,10 @@
 
 #include "conf.h"
 
+#define SIMULATION		1
+#define SIMULATION_DELAY	50
+#define SIMULATION_READ_VALUES	{ "+7.28384854E-12", "-2.34567892E+03" }
+
 #define UART_DEV		DEV_UART0
 #define UART_NAME		DEV_UART0_NAME
 #define UART_SPEED		38400
@@ -62,12 +66,13 @@
 	} while (0)
 
 static void init_console(void);
-static void init_network(void);
 static void init_uart(void);
 static void send_uart(const char *msg);
 static void reset(void);
 static const char *start_reason(void);
 
+#if SIMULATION == 0
+static void init_network(void);
 static int network_timeout_needed(const char *request);
 static void start_network_timeout(void);
 static void stop_network_timeout(void);
@@ -76,6 +81,7 @@ static void network_timeout_callback(HANDLE timer, void *arg);
 static void open_connection(void);
 static int is_connection_active(void);
 static void close_connection(void);
+#endif
 
 static void led1_on(void);
 static void led1_off(void);
@@ -84,8 +90,10 @@ static void led2_off(void);
 static void led2_toggle(void);
 
 static FILE * volatile uart_stream;
+#if SIMULATION == 0
 static FILE * volatile network_stream;
 static TCPSOCKET * volatile network_socket;
+#endif
 
 static volatile HANDLE network_timer;
 static volatile HANDLE network_timeout_event;
@@ -112,6 +120,7 @@ THREAD(uart_thread, arg)
 			log("UART recvd (%d): %s", strlen(buf), buf);
 		}
 
+#if SIMULATION == 0
 		if (!is_connection_active()) {
 			send_uart(MSG_DISCONNECTED);
 			continue;
@@ -127,6 +136,19 @@ THREAD(uart_thread, arg)
 				start_network_timeout();
 			}
 		}
+#else
+		if (strstr(buf, "READ?") == buf) {
+			const char *simulation_read_values[] = SIMULATION_READ_VALUES;
+			static int current_value = 0;
+
+			NutDelay(SIMULATION_DELAY);
+
+			led2_toggle();
+			send_uart(simulation_read_values[current_value]);
+
+			current_value = (current_value + 1) % (sizeof(simulation_read_values) / sizeof(simulation_read_values[0]));
+		}
+#endif
 	}
 }
 
@@ -189,6 +211,7 @@ THREAD(console_thread, arg)
 	}
 }
 
+#if SIMULATION == 0
 THREAD(network_thread, arg)
 {
 	char buf[BUF_SIZE];
@@ -338,24 +361,6 @@ close_connection(void)
 }
 
 static void
-init_console(void)
-{
-	u_long baud = CONSOLE_SPEED;
-
-	NutRegisterDevice(&CONSOLE_DEV, 0, 0);
-
-	freopen(CONSOLE_NAME, "w", stdout);
-	freopen(CONSOLE_NAME, "w", stderr);
-	freopen(CONSOLE_NAME, "r", stdin);
-	_ioctl(_fileno(stdout), UART_SETSPEED, &baud);
-
-	if (!NutThreadCreate("console", console_thread, NULL, 1024)) {
-		log("Failed to create a console thread\n");
-		reset();
-	}
-}
-
-static void
 init_network(void)
 {
 	log("Registering %s...\n", DEV_ETHER_NAME);
@@ -385,6 +390,25 @@ init_network(void)
 		reset();
 	}
 }
+#endif
+
+static void
+init_console(void)
+{
+	u_long baud = CONSOLE_SPEED;
+
+	NutRegisterDevice(&CONSOLE_DEV, 0, 0);
+
+	freopen(CONSOLE_NAME, "w", stdout);
+	freopen(CONSOLE_NAME, "w", stderr);
+	freopen(CONSOLE_NAME, "r", stdin);
+	_ioctl(_fileno(stdout), UART_SETSPEED, &baud);
+
+	if (!NutThreadCreate("console", console_thread, NULL, 1024)) {
+		log("Failed to create a console thread\n");
+		reset();
+	}
+}
 
 static void
 init_uart(void)
@@ -400,6 +424,12 @@ init_uart(void)
 		log("Failed to create uart thread\n");
 		reset();
 	}
+
+#if SIMULATION == 1
+	log("Simulation mode - pretending that we are connected\n");
+	send_uart(MSG_CONNECTED);
+	led1_on();
+#endif
 }
 
 static void
@@ -422,6 +452,7 @@ reset(void)
 
 	resetting = 1;
 
+#if SIMULATION == 0
 	if (network_socket) {
 		/*
 		 * XXX: This sometimes causes a Data Abort exception, probably because of ongoing
@@ -431,6 +462,7 @@ reset(void)
 		 */
 		NutTcpCloseSocket(network_socket);
 	}
+#endif
 
 	/* Give some time to send out UART buffers and close socket. */
 	NutSleep(250);
@@ -531,7 +563,9 @@ int main(void)
 	log("Start reason: %s\n", start_reason());
        	log("Nut/OS %s\n", NutVersionString());
 
+#if SIMULATION == 0
 	init_network();
+#endif
 
 	NutWatchDogStart(600, 0);
 
