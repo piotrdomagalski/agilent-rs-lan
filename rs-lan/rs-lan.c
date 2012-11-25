@@ -36,7 +36,7 @@
 
 #define SIMULATION		1
 #define SIMULATION_DELAY	50
-#define SIMULATION_READ_VALUES	{ "+7.28384854E-12", "-2.34567892E+03" }
+#define SIMULATION_READ_VALUES	{ "+7.28384854E-12\n", "-2.34567892E+03\n" }
 
 #define UART_DEV		DEV_UART0
 #define UART_NAME		DEV_UART0_NAME
@@ -554,8 +554,8 @@ int main(void)
 	led1_off();
 	led2_off();
 
-	init_uart();
 	init_console();
+	init_uart();
 
 	puts("");
 	log("Agilent 34410A RS-LAN translator\n");
