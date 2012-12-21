@@ -1,7 +1,7 @@
 RS - LAN translator for Agilent multimeter
 ==========================================
 
-Project of an RS232 <-> LAN translator for [Agilent
+Project of an RS232 - LAN translator for [Agilent
 34410A](http://www.home.agilent.com/en/pd-692834-pn-34410A/) digital multimeter. There is actually
 not much code specific to this product, so it could potentially be used with other SCPI compliant
 devices.
